@@ -32,4 +32,4 @@ const taskSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("ProDUCT", productSchema);
+module.exports = mongoose.model("Product", productSchema);
