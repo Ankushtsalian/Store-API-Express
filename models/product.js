@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please provide Product Price"],
   },
-  featurede: {
+  featured: {
     type: Boolean,
     default: false,
   },
