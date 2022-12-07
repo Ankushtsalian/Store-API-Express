@@ -6,13 +6,17 @@ const getAllProductsStatic = async (req, res) => {
   res.status(200).json({ msg: products, nbHits: products.length });
 };
 const getAllProducts = async (req, res) => {
-  const { featured } = req.query;
+  const { featured, company, name } = req.query;
 
   //if we have wrong query which isn't in db
   const queryObject = {};
 
   //just create obj contains valid query
   if (featured) queryObject.featured = featured === "true" ? true : false;
+
+  if (company) queryObject.company = company;
+
+  if (name) queryObject.name = { $regex: name, $options: "i" };
 
   //if queryObj is empty get all product
   const products = await productSchema.find(queryObject);
