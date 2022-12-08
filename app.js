@@ -4,7 +4,6 @@ const express = require("express");
 const app = express();
 var cors = require("cors");
 
-app.use(cors());
 const notFoundMiddleware = require("./middleware/not-found");
 const errorMiddleware = require("./middleware/error-handler");
 const connectDB = require("./db/connect");
@@ -12,7 +11,7 @@ const connectDB = require("./db/connect");
 const productRouter = require("./routes/products");
 //middleware
 app.use(express.json());
-
+app.use(cors());
 //Routes
 
 app.get("/", (req, res) => {
