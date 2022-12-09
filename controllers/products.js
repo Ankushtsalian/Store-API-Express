@@ -10,7 +10,8 @@ const getAllProductsStatic = async (req, res) => {
 };
 /**------------------------------------------------getAllProducts---------------------------------------------- */
 const getAllProducts = async (req, res) => {
-  const { featured, company, name, sort, fields, limit, page } = req.query;
+  const { featured, company, name, sort, fields, limit, page, numericFiters } =
+    req.query;
   //if we have wrong query which isn't in db
   const queryObject = {};
 
@@ -46,7 +47,27 @@ const getAllProducts = async (req, res) => {
     const skip = (pageNumber - 1) * limitRecords;
     result = result.skip(skip).limit(limitRecords);
   }
-  /**------------------------------------PAGINATION --------------------------------- */
+  /**------------------------------------NUMERIC FILTERS --------------------------------- */
+
+  if (numericFiters) {
+    const operatorMap = {
+      ">": "$gt",
+      ">=": "$gte",
+      "=": "$eq",
+      "<": "$lt",
+      "<=": "$lte",
+    };
+
+    const regEx = /\b(<|>|>=|=|<|<=)\b/g;
+
+    let filters = numericFiters.replace(
+      regEx,
+      (match) => `-${operatorMap[match]}-`
+    );
+
+    console.log(filters);
+  }
+  /**------------------------------------NUMERIC FILTERS --------------------------------- */
 
   /**--------------------------wait for result to complete in async--------------- */
   const products = await result;
