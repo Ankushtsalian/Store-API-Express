@@ -10,7 +10,7 @@ const getAllProductsStatic = async (req, res) => {
 };
 /**------------------------------------------------getAllProducts---------------------------------------------- */
 const getAllProducts = async (req, res) => {
-  const { featured, company, name, sort, fields, limit, page, numericFiters } =
+  const { featured, company, name, sort, fields, limit, page, numericFilters } =
     req.query;
   //if we have wrong query which isn't in db
   const queryObject = {};
@@ -24,7 +24,7 @@ const getAllProducts = async (req, res) => {
 
   /**------------------------------------NUMERIC FILTERS --------------------------------- */
 
-  if (numericFiters) {
+  if (numericFilters) {
     const operatorMap = {
       ">": "$gt",
       ">=": "$gte",
@@ -35,7 +35,7 @@ const getAllProducts = async (req, res) => {
 
     const regEx = /\b(<|>|>=|=|<|<=)\b/g;
 
-    let filters = numericFiters.replace(regEx, (match) => {
+    let filters = numericFilters.replace(regEx, (match) => {
       return `-${operatorMap[match]}-`;
     });
     //filters = price-$gt-40,rating-$gte-4
@@ -51,7 +51,6 @@ const getAllProducts = async (req, res) => {
     });
   }
   /**------------------------------------NUMERIC FILTERS --------------------------------- */
-  console.log(queryObject);
 
   /**----------------find all products based on valid query string---------------- */
   let result = productSchema.find(queryObject);
