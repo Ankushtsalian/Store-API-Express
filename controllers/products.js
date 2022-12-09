@@ -2,9 +2,9 @@ const productSchema = require("../models/product");
 
 const getAllProductsStatic = async (req, res) => {
   const products = await productSchema
-    .find({ price: { $gt: 100 } })
-    .select(["price", "name"])
-    .sort("price");
+    .find({ featured: false, rating: { $gte: 4.6 }, price: { $gt: 100 } })
+    .select(["rating", "featured", "price"])
+    .sort("rating");
 
   res.status(200).json({ msg: products, nbHits: products.length });
 };
@@ -21,6 +21,38 @@ const getAllProducts = async (req, res) => {
   if (company) queryObject.company = company;
 
   if (name) queryObject.name = { $regex: name, $options: "i" };
+
+  /**------------------------------------NUMERIC FILTERS --------------------------------- */
+
+  if (numericFiters) {
+    const operatorMap = {
+      ">": "$gt",
+      ">=": "$gte",
+      "=": "$eq",
+      "<": "$lt",
+      "<=": "$lte",
+    };
+
+    const regEx = /\b(<|>|>=|=|<|<=)\b/g;
+
+    let filters = numericFiters.replace(regEx, (match) => {
+      return `-${operatorMap[match]}-`;
+    });
+    //filters = price-$gt-40,rating-$gte-4
+    //achieve===>{ price: { $gt: 100 }, rating : { $gte : 4.5 } }
+    //"productSchema.find(queryObject)" <=============> "productSchema.find({field: price: { operator : $gt: value: 100 }, rating : { $gte : 4.5 } })"
+    // remember to create an key has querry value named key as field
+    const options = ["price", "rating"];
+    filters = filters.split(",").forEach((element) => {
+      const [field, operator, value] = element.split("-");
+      if (options.includes(field)) {
+        queryObject[field] = { [operator]: Number(value) };
+      }
+    });
+  }
+  /**------------------------------------NUMERIC FILTERS --------------------------------- */
+  console.log(queryObject);
+
   /**----------------find all products based on valid query string---------------- */
   let result = productSchema.find(queryObject);
 
@@ -47,27 +79,6 @@ const getAllProducts = async (req, res) => {
     const skip = (pageNumber - 1) * limitRecords;
     result = result.skip(skip).limit(limitRecords);
   }
-  /**------------------------------------NUMERIC FILTERS --------------------------------- */
-
-  if (numericFiters) {
-    const operatorMap = {
-      ">": "$gt",
-      ">=": "$gte",
-      "=": "$eq",
-      "<": "$lt",
-      "<=": "$lte",
-    };
-
-    const regEx = /\b(<|>|>=|=|<|<=)\b/g;
-
-    let filters = numericFiters.replace(regEx, (match) => {
-      console.log(match);
-      return `-${operatorMap[match]}-`;
-    });
-    //filters = price-$gt-40,rating-$gte-4
-    //achieve===>{ price: { $gt: 100 }, rating : { $gte:4.5 } }
-  }
-  /**------------------------------------NUMERIC FILTERS --------------------------------- */
 
   /**--------------------------wait for result to complete in async--------------- */
   const products = await result;
@@ -75,7 +86,7 @@ const getAllProducts = async (req, res) => {
   //if queryObj is empty get all product
   res
     .status(200)
-    .json({ msg: products, nbHits: products.length, companyOptions });
+    .json({ nbHits: products.length, msg: products, companyOptions });
 };
 
 module.exports = { getAllProducts, getAllProductsStatic };
