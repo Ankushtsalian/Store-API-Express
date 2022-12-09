@@ -5,10 +5,9 @@ const getAllProductsStatic = async (req, res) => {
 
   res.status(200).json({ msg: products, nbHits: products.length });
 };
-
+/**------------------------------------------------getAllProducts---------------------------------------------- */
 const getAllProducts = async (req, res) => {
-  const { featured, company, name, sort, fields } = req.query;
-
+  const { featured, company, name, sort, fields, limit, page } = req.query;
   //if we have wrong query which isn't in db
   const queryObject = {};
 
@@ -28,17 +27,31 @@ const getAllProducts = async (req, res) => {
   } else result = result.sort("createdAt");
 
   /**------------------------------------Select it --------------------------------- */
+  let resultCopy = productSchema.find();
+
+  let companyOptions = await resultCopy.select("company");
 
   if (fields) {
     const fieldValue = fields.split(",").join(" ");
     result = result.select(fieldValue);
   }
+  /**------------------------------------PAGINATION --------------------------------- */
+  if (page) {
+    const pageNumber = Number(page) || 1;
+    const limitRecords = Number(limit) || 10;
+
+    const skip = (pageNumber - 1) * limitRecords;
+    result = result.skip(skip).limit(limitRecords);
+  }
+  /**------------------------------------PAGINATION --------------------------------- */
 
   /**--------------------------wait for result to complete in async--------------- */
   const products = await result;
 
   //if queryObj is empty get all product
-  res.status(200).json({ msg: products, nbHits: products.length });
+  res
+    .status(200)
+    .json({ msg: products, nbHits: products.length, companyOptions });
 };
 
 module.exports = { getAllProducts, getAllProductsStatic };
