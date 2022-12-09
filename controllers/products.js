@@ -60,12 +60,12 @@ const getAllProducts = async (req, res) => {
 
     const regEx = /\b(<|>|>=|=|<|<=)\b/g;
 
-    let filters = numericFiters.replace(
-      regEx,
-      (match) => `-${operatorMap[match]}-`
-    );
-
-    console.log(filters);
+    let filters = numericFiters.replace(regEx, (match) => {
+      console.log(match);
+      return `-${operatorMap[match]}-`;
+    });
+    //filters = price-$gt-40,rating-$gte-4
+    //achieve===>{ price: { $gt: 100 }, rating : { $gte:4.5 } }
   }
   /**------------------------------------NUMERIC FILTERS --------------------------------- */
 
